@@ -10,6 +10,7 @@ const entregaRoutes = require('./rutas/entregaRoutes');
 const pagoRoutes = require('./rutas/pagoRoutes');       
 const usuarioRoutes = require('./rutas/usuarioRoutes'); 
 const dashboardRoutes = require('./rutas/dashboardRoutes');
+const reportesRoutes = require('./routes/reportesRoutes');
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use('/api/pagos', pagoRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/notificaciones', notificacionesRoutes);
+app.use('/api/reportes', reportesRoutes);
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en el puerto ${PORT}`);
