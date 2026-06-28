@@ -10,7 +10,7 @@ const entregaRoutes = require('./rutas/entregaRoutes');
 const pagoRoutes = require('./rutas/pagoRoutes');       
 const usuarioRoutes = require('./rutas/usuarioRoutes'); 
 const dashboardRoutes = require('./rutas/dashboardRoutes');
-const reportesRoutes = require('./routes/reportesRoutes');
+const reportesRoutes = require('./rutas/reportesRoutes');
 
 const app = express();
 
