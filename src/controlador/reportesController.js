@@ -4,18 +4,18 @@ exports.obtenerReportes = async (req, res) => {
     try {
         // Ventas del día, semana y mes
         const queryVentas = `
-            SELECT 
-                SUM(CASE WHEN fecha::date = CURRENT_DATE THEN monto_pagado ELSE 0 END) as ventas_hoy,
-                SUM(CASE WHEN fecha >= CURRENT_DATE - INTERVAL '7 days' THEN monto_pagado ELSE 0 END) as ventas_semana,
-                SUM(CASE WHEN fecha >= CURRENT_DATE - INTERVAL '30 days' THEN monto_pagado ELSE 0 END) as ventas_mes
+            SELECT
+                COALESCE(SUM(CASE WHEN fecha_pago::date = CURRENT_DATE THEN monto_pagado ELSE 0 END),0) AS ventas_hoy,
+                COALESCE(SUM(CASE WHEN fecha_pago >= CURRENT_DATE - INTERVAL '7 days' THEN monto_pagado ELSE 0 END),0) AS ventas_semana,
+                COALESCE(SUM(CASE WHEN fecha_pago >= CURRENT_DATE - INTERVAL '30 days' THEN monto_pagado ELSE 0 END),0) AS ventas_mes
             FROM pagos;
         `;
         
         // Stock actual (Botellones entregados - Botellones retirados)
         const queryStock = `
-            SELECT 
-                (SELECT COALESCE(SUM(botellones_entregados), 0) FROM entregas) - 
-                (SELECT COALESCE(SUM(envases_devueltos), 0) FROM entregas) as stock_actual;
+           SELECT
+            (SELECT COALESCE(SUM(botellones_entregados), 0) FROM entregas) -
+            (SELECT COALESCE(SUM(envases_devueltos), 0) FROM entregas) as stock_actual;
         `;
 
         const resVentas = await pool.query(queryVentas);
@@ -26,6 +26,9 @@ exports.obtenerReportes = async (req, res) => {
             stock: resStock.rows[0].stock_actual
         });
     } catch (error) {
-        res.status(500).json({ error: "Error al generar reportes" });
+        console.error(error);
+        res.status(500).json({
+            error: error.message
+        });
     }
 };
