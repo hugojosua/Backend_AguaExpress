@@ -29,7 +29,7 @@ const crearCliente = async (req, res) => {
         const intervalo = intervalo_consumo || 7;
 
         const result = await pool.query(
-            'INSERT INTO clientes (nombres_completos, numero_telefonico, direccion, estado, intervalo_consumo) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            'INSERT INTO clientes (nombres_completos, numero_telefonico, direccion, estado, intervalo_consumo_dias) VALUES ($1, $2, $3, $4, $5) RETURNING *',
             [nombres_completos, numero_telefonico, direccion, estado || 'Activo', intervalo]
         );
 
