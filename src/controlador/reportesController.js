@@ -14,8 +14,8 @@ exports.obtenerReportes = async (req, res) => {
         // 2. Stock actual (Botellones entregados - Botellones retirados)
         const queryStock = `
            SELECT
-            (SELECT COALESCE(SUM(botellones_entregados), 0) FROM entregas) -
-            (SELECT COALESCE(SUM(envases_devueltos), 0) FROM entregas) as stock_actual;
+            (SELECT COALESCE(SUM(envases_devueltos), 0) FROM entregas) -
+            (SELECT COALESCE(SUM(botellones_entregados), 0) FROM entregas) as stock_actual;
         `;
 
         // 3. NUEVO: Transacciones recientes (Últimos 15 pagos registrados)
