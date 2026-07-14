@@ -30,12 +30,22 @@ const enviarMensaje = async (numero, mensaje) => {
     }
 
     try {
-        const numeroFormateado = `${numero}@c.us`; 
+        // 1. Convertimos a string y quitamos espacios o el signo '+' si lo tiene
+        let numeroLimpio = numero.toString().replace(/[\s+]/g, '');
+
+        // 2. Si el número empieza con '0' (ej. 0991234567), lo reemplazamos por el código de Ecuador '593'
+        if (numeroLimpio.startsWith('0')) {
+            numeroLimpio = '593' + numeroLimpio.substring(1);
+        }
+
+        // 3. Formato final requerido por whatsapp-web.js
+        const numeroFormateado = `${numeroLimpio}@c.us`; 
+        
         await client.sendMessage(numeroFormateado, mensaje);
-        console.log(`Mensaje enviado a ${numero}`);
+        console.log(`✅ Mensaje enviado exitosamente a ${numeroFormateado}`);
         return { success: true };
     } catch (error) {
-        console.error(`Error enviando mensaje a ${numero}:`, error);
+        console.error(`❌ Error enviando mensaje a ${numero}:`, error);
         throw error;
     }
 };
