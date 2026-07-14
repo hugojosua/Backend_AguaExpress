@@ -26,7 +26,7 @@ const obtenerPendientesNotificacion = async (req, res) => {
     }
 };
 
-//  Enviar el mensaje a un cliente específico
+// Enviar el mensaje a un cliente específico
 const enviarNotificacionIndividual = async (req, res) => {
     const { cliente_id } = req.body;
 
@@ -43,17 +43,13 @@ const enviarNotificacionIndividual = async (req, res) => {
 
         const cliente = result.rows[0];
         
-        // Limpiar número 
-        let numeroLimpio = cliente.numero_telefonico.replace(/\D/g,'');
-        if (numeroLimpio.startsWith('0')) {
-            numeroLimpio = '593' + numeroLimpio.substring(1); 
-        }
+        // Pasamos el número tal cual, whatsappController.js ya se encarga de limpiarlo y formatearlo
+        const numero = cliente.numero_telefonico;
 
-        // Mensaje ajustado para que suene preventivo
         const mensaje = `¡Hola ${cliente.nombres_completos}! 👋\nSomos AguaExpress. Según nuestros registros, pudimos notar, es posible que estés próximo a terminar tu botellón de agua.\n\n¿Deseas que programemos una recarga para dejarte abastecido? 💧🚚`;
 
         // disparar mensaje
-        await enviarMensaje(numeroLimpio, mensaje);
+        await enviarMensaje(numero, mensaje);
 
         // Guardar y desaparezca de la lista de hoy
         await pool.query(
@@ -65,7 +61,11 @@ const enviarNotificacionIndividual = async (req, res) => {
 
     } catch (error) {
         console.error('Error al enviar WhatsApp:', error);
-        res.status(500).json({ error: '✅El bot pudo enviar el mensaje. Revisa si el celular' });
+        // Ahora devolvemos el mensaje de error real para que sepas qué está fallando
+        res.status(500).json({ 
+            error: 'No se pudo enviar el mensaje', 
+            detalle: error.message 
+        });
     }
 };
 
