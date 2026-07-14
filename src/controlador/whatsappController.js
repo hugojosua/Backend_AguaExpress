@@ -1,8 +1,4 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
-
-//  se guarde y no pida QR cada vez que reinicio el servidor
-const { Client, LocalAuth } = require('whatsapp-web.js');
 
 const client = new Client({
     authStrategy: new LocalAuth(),
@@ -13,15 +9,15 @@ const client = new Client({
 });
 
 let isReady = false;
-let qrActual = ''; // Variable para almacenar el texto del QR
+let qrActual = ''; 
 
 client.on('qr', (qr) => {
     qrActual = qr;
-    console.log('NUEVO QR GENERADO. Entra a la ruta /api/whatsapp/qr para escanearlo y conectar AguaExpress.');
+    console.log('NUEVO QR GENERADO. Entra a tu navegador en http://localhost:3000/api/whatsapp/qr para escanearlo');
 });
 
 client.on('ready', () => {
-    qrActual = ''; // Limpiamos el QR cuando ya se conectó
+    qrActual = ''; 
     isReady = true;
     console.log('\n✅ Cliente de WhatsApp conectado y listo para enviar notificaciones ✅\n');
 });
@@ -44,7 +40,6 @@ const enviarMensaje = async (numero, mensaje) => {
     }
 };
 
-// Función adicional para exportar el valor del QR al archivo principal
 const obtenerQr = () => qrActual;
 
 module.exports = { enviarMensaje, isReady, obtenerQr };
