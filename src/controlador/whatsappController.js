@@ -2,41 +2,38 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 
 //  se guarde y no pida QR cada vez que reinicio el servidor
+const { Client, LocalAuth } = require('whatsapp-web.js');
+
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: { 
         headless: true, 
-        args: ['--no-sandbox', '--disable-setuid-sandbox'] // Importante para evitar errores en algunos sistemas
+        args: ['--no-sandbox', '--disable-setuid-sandbox'] 
     }
 });
 
 let isReady = false;
+let qrActual = ''; // Variable para almacenar el texto del QR
 
-// Generar QR para vincular el teléfono
 client.on('qr', (qr) => {
-    console.log('\n=========================================');
-    console.log('¡Escanea este código QR con el WhatsApp de AguaExpress!');
-    console.log('=========================================\n');
-    qrcode.generate(qr, { small: true });
+    qrActual = qr;
+    console.log('NUEVO QR GENERADO. Entra a la ruta /api/whatsapp/qr para escanearlo y conectar AguaExpress.');
 });
 
-// me avisa si la sesión esta lista y conectada 
 client.on('ready', () => {
-    console.log('\n✅ Cliente de WhatsApp conectado y listo para enviar notificaciones ✅\n');
+    qrActual = ''; // Limpiamos el QR cuando ya se conectó
     isReady = true;
+    console.log('\n✅ Cliente de WhatsApp conectado y listo para enviar notificaciones ✅\n');
 });
 
-// Inicializar el cliente
 client.initialize();
 
-// Función que exportaremos para enviar mensajes
 const enviarMensaje = async (numero, mensaje) => {
     if (!isReady) {
         throw new Error('El cliente de WhatsApp aún no está listo. Revisa la terminal o escanea el QR.');
     }
 
     try {
-        // verificacion por el codigo de pais y formato correcto
         const numeroFormateado = `${numero}@c.us`; 
         await client.sendMessage(numeroFormateado, mensaje);
         console.log(`Mensaje enviado a ${numero}`);
@@ -47,4 +44,7 @@ const enviarMensaje = async (numero, mensaje) => {
     }
 };
 
-module.exports = { enviarMensaje, isReady };
+// Función adicional para exportar el valor del QR al archivo principal
+const obtenerQr = () => qrActual;
+
+module.exports = { enviarMensaje, isReady, obtenerQr };

@@ -49,7 +49,7 @@ const actualizarCliente = async (req, res) => {
         const intervalo = intervalo_consumo || 7;
 
         const result = await pool.query(
-            'UPDATE clientes SET nombres_completos = $1, numero_telefonico = $2, direccion = $3, estado = $4, intervalo_consumo = $5 WHERE id = $6 RETURNING *',
+            'UPDATE clientes SET nombres_completos = $1, numero_telefonico = $2, direccion = $3, estado = $4, intervalo_consumo_dias = $5 WHERE id = $6 RETURNING *',
             [nombres_completos, numero_telefonico, direccion, estado, intervalo, id]
         );
 
