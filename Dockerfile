@@ -1,5 +1,5 @@
 # Usamos una imagen oficial de Node.js
-FROM node:18
+FROM node:18-alpine
 
 # Instalamos las dependencias gráficas y de sistema operativo que necesita Puppeteer/Chrome
 RUN apt-get update \
