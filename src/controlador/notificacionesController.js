@@ -53,7 +53,7 @@ const enviarNotificacionIndividual = async (req, res) => {
 
         // Guardar y desaparezca de la lista de hoy
         await pool.query(
-            "INSERT INTO notificaciones (cliente_id, tipo_mensaje) VALUES ($1, 'Recordatorio_Predictivo')",
+            "INSERT INTO notificaciones (cliente_id, tipo_mensaje, fecha_programada, fecha_envio) VALUES ($1, 'Recordatorio_Predictivo', CURRENT_DATE, CURRENT_TIMESTAMP)",
             [cliente_id]
         );
 
