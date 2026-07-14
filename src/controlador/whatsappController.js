@@ -4,7 +4,13 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: { 
         headless: true, 
-        args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+        args: [
+            '--no-sandbox', 
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage', // <-- Evita que Puppeteer use /dev/shm, crucial en Render
+            '--single-process',        // <-- Reduce el consumo de RAM
+            '--no-zygote'
+        ] 
     }
 });
 
