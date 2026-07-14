@@ -13,7 +13,7 @@ let qrActual = '';
 
 client.on('qr', (qr) => {
     qrActual = qr;
-    console.log('NUEVO QR GENERADO. Entra a tu navegador en http://localhost:3000/api/whatsapp/qr para escanearlo');
+    console.log('NUEVO QR GENERADO. Entra a tu navegador en https://backend-aguaexpress.onrender.com/api/whatsapp/qr para escanearlo');
 });
 
 client.on('ready', () => {
