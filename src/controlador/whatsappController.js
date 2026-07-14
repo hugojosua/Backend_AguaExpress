@@ -1,45 +1,28 @@
-const { makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
+const { Client, LocalAuth } = require('whatsapp-web.js');
+
+const client = new Client({
+    authStrategy: new LocalAuth(),
+    puppeteer: { 
+        headless: true, 
+        args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+    }
+});
 
 let isReady = false;
-let qrActual = '';
-let clientSocket;
+let qrActual = ''; 
 
-async function connectToWhatsApp() {
-    // Baileys guarda la sesión en esta carpeta local
-    const { state, saveCreds } = await useMultiFileAuthState('auth_baileys');
+client.on('qr', (qr) => {
+    qrActual = qr;
+    console.log('NUEVO QR GENERADO. Entra a tu navegador en https://backend-aguaexpress.onrender.com/api/whatsapp/qr para escanearlo');
+});
 
-    clientSocket = makeWASocket({
-        auth: state,
-        printQRInTerminal: true // Imprime el QR en la consola de Render por si falla la ruta web
-    });
+client.on('ready', () => {
+    qrActual = ''; 
+    isReady = true;
+    console.log('\n✅ Cliente de WhatsApp conectado y listo para enviar notificaciones ✅\n');
+});
 
-    clientSocket.ev.on('connection.update', (update) => {
-        const { connection, lastDisconnect, qr } = update;
-
-        if (qr) {
-            qrActual = qr;
-            console.log('NUEVO QR GENERADO. Entra a tu navegador para escanearlo');
-        }
-
-        if (connection === 'close') {
-            const shouldReconnect = lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut;
-            console.log('Conexión cerrada. Reconectando:', shouldReconnect);
-            if (shouldReconnect) {
-                connectToWhatsApp();
-            }
-        } else if (connection === 'open') {
-            isReady = true;
-            qrActual = '';
-            console.log('\n✅ Cliente de WhatsApp conectado mediante Baileys ✅\n');
-        }
-    });
-
-    // Guarda las credenciales cada vez que se actualizan
-    clientSocket.ev.on('creds.update', saveCreds);
-}
-
-// Iniciar la conexión
-connectToWhatsApp();
+client.initialize();
 
 const enviarMensaje = async (numero, mensaje) => {
     if (!isReady) {
@@ -47,16 +30,18 @@ const enviarMensaje = async (numero, mensaje) => {
     }
 
     try {
+        // 1. Convertimos a string y quitamos espacios o el signo '+' si lo tiene
         let numeroLimpio = numero.toString().replace(/[\s+]/g, '');
+
+        // 2. Si el número empieza con '0' (ej. 0991234567), lo reemplazamos por el código de Ecuador '593'
         if (numeroLimpio.startsWith('0')) {
             numeroLimpio = '593' + numeroLimpio.substring(1);
         }
 
-        // IMPORTANTE: El formato en Baileys termina en @s.whatsapp.net, no en @c.us
-        const numeroFormateado = `${numeroLimpio}@s.whatsapp.net`; 
+        // 3. Formato final requerido por whatsapp-web.js
+        const numeroFormateado = `${numeroLimpio}@c.us`; 
         
-        // IMPORTANTE: Baileys requiere que el mensaje vaya dentro de un objeto { text: mensaje }
-        await clientSocket.sendMessage(numeroFormateado, { text: mensaje });
+        await client.sendMessage(numeroFormateado, mensaje);
         console.log(`✅ Mensaje enviado exitosamente a ${numeroFormateado}`);
         return { success: true };
     } catch (error) {
