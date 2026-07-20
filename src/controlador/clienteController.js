@@ -12,12 +12,20 @@ const obtenerClientes = async (req, res) => {
 
 // 2. Registrar un nuevo cliente (POST)
 const crearCliente = async (req, res) => {
-    // Añadimos intervalo_consumo a los datos que recibimos
     const { nombres_completos, numero_telefonico, direccion, estado, intervalo_consumo } = req.body;
 
     if (!nombres_completos || !numero_telefonico || !direccion) {
         return res.status(400).json({ error: 'Todos los campos obligatorios deben estar llenos' });
     }
+
+    // --- NUEVA VALIDACIÓN DE NÚMERO TELEFÓNICO ---
+    const regexTelefono = /^\d{10}$/;
+    if (!regexTelefono.test(numero_telefonico)) {
+        return res.status(400).json({ 
+            error: 'El número telefónico debe contener exactamente 10 dígitos, sin espacios ni caracteres especiales.' 
+        });
+    }
+    // ---------------------------------------------
 
     try {
         const checkPhone = await pool.query('SELECT * FROM clientes WHERE numero_telefonico = $1', [numero_telefonico]);
@@ -25,7 +33,6 @@ const crearCliente = async (req, res) => {
             return res.status(400).json({ error: 'El número telefónico ya está registrado' });
         }
 
-        // Si el usuario no manda un intervalo, por defecto le ponemos 7 días
         const intervalo = intervalo_consumo || 7;
 
         const result = await pool.query(
@@ -35,7 +42,7 @@ const crearCliente = async (req, res) => {
 
         res.status(201).json({ mensaje: 'Cliente registrado exitosamente', cliente: result.rows[0] });
     } catch (error) {
-        console.error("Error al registrar:", error); // Esto te ayudará a ver errores en la terminal
+        console.error("Error al registrar:", error);
         res.status(500).json({ error: 'Error al registrar el cliente en la base de datos' });
     }
 };
@@ -44,6 +51,17 @@ const crearCliente = async (req, res) => {
 const actualizarCliente = async (req, res) => {
     const { id } = req.params;
     const { nombres_completos, numero_telefonico, direccion, estado, intervalo_consumo } = req.body;
+
+    // --- NUEVA VALIDACIÓN DE NÚMERO TELEFÓNICO ---
+    if (numero_telefonico) {
+        const regexTelefono = /^\d{10}$/;
+        if (!regexTelefono.test(numero_telefonico)) {
+            return res.status(400).json({ 
+                error: 'El número telefónico debe contener exactamente 10 dígitos, sin espacios ni caracteres especiales.' 
+            });
+        }
+    }
+    // ---------------------------------------------
 
     try {
         const intervalo = intervalo_consumo || 7;
