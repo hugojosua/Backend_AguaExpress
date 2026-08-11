@@ -46,7 +46,7 @@ const enviarNotificacionIndividual = async (req, res) => {
         // Pasamos el número tal cual, whatsappController.js ya se encarga de limpiarlo y formatearlo
         const numero = cliente.numero_telefonico;
 
-        const mensaje = `¡Hola ${cliente.nombres_completos}! 👋\nSomos AguaExpress. Según nuestros registros, pudimos notar, es posible que estés próximo a terminar tu botellón de agua.\n\n¿Deseas que programemos una recarga para dejarte abastecido? 💧🚚`;
+        const mensaje = `¡Hola ${cliente.nombres_completos}! 👋\nSomos AguaExpress. Según nuestros registros, pudimos notar, es posible que se termino tu botellón de agua.\n\n¿Deseas que programemos una recarga para dejarte abastecido? 💧🚚`;
 
         // disparar mensaje
         await enviarMensaje(numero, mensaje);
@@ -69,4 +69,29 @@ const enviarNotificacionIndividual = async (req, res) => {
     }
 };
 
-module.exports = { obtenerPendientesNotificacion, enviarNotificacionIndividual };
+const descartarNotificacion = async (req, res) => {
+    const { cliente_id } = req.body;
+
+    if (!cliente_id) {
+        return res.status(400).json({ error: 'El ID del cliente falta' });
+    }
+
+    try {
+        // Insertamos un registro con tipo 'Descartado' para que la consulta principal lo ignore hoy
+        await pool.query(
+            "INSERT INTO notificaciones (cliente_id, tipo_mensaje, fecha_programada, fecha_envio) VALUES ($1, 'Descartado', CURRENT_DATE, CURRENT_TIMESTAMP)",
+            [cliente_id]
+        );
+
+        res.status(200).json({ mensaje: 'Notificación descartada de la lista' });
+
+    } catch (error) {
+        console.error('Error al descartar notificación:', error);
+        res.status(500).json({ 
+            error: 'No se pudo eliminar la notificación', 
+            detalle: error.message 
+        });
+    }
+};
+
+module.exports = { obtenerPendientesNotificacion, enviarNotificacionIndividual, descartarNotificacion };
